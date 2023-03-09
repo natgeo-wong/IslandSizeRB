@@ -4,15 +4,7 @@ using DrWatson
 using Dates
 using Logging
 using Oceananigans
-using Oceananigans.OutputWriters: start_next_file
 using Printf
-
-function make_new_output_file(sim)
-    model = sim.model
-    writer = sim.output_writers[:fields]
-    start_next_file(model, writer)
-    return nothing
-end
 
 processor = CPU()
 # processor = GPU()
@@ -53,7 +45,7 @@ model = NonhydrostaticModel(;
 
 wᵢ(x,y,z) = 1e-3 * (rand()-1); set!(model, w=wᵢ)
 
-wizard = TimeStepWizard(cfl=0.7, max_change=1.1)
+wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 
 start_time = time_ns()
 progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%07d",sim.model.clock.iteration)) steps | Model Time: $(@sprintf("%09.3f",sim.model.clock.time))"
@@ -65,6 +57,7 @@ b = model.tracers.b        # unpack buoyancy `Field`
 
 simulation.output_writers[:field_writer] = NetCDFOutputWriter(
     model, (; u, v, w, b),
+    indices = (1:1000,:,:),
     filename=datadir("more_fields.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(0.1)
@@ -72,6 +65,5 @@ simulation.output_writers[:field_writer] = NetCDFOutputWriter(
 
 simulation.callbacks[:wizard]   = Callback(wizard,   IterationInterval(10))
 simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
-simulation.callbacks[:new_file_maker] = Callback(make_new_output_file, TimeInterval(10))
 
 run!(simulation)
