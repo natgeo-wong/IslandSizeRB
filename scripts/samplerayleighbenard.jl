@@ -4,20 +4,28 @@ using DrWatson
 using Dates
 using Logging
 using Oceananigans
+using Oceananigans.OutputWriters: start_next_file
 using Printf
+
+function make_new_output_file(sim)
+    model = sim.model
+    writer = sim.output_writers[:fields]
+    start_next_file(model, writer)
+    return nothing
+end
 
 processor = CPU()
 # processor = GPU()
 
-xmin,xmax = 0,6000; nx = 6000
-ymin,ymax = -100,100; ny = 2000
+xmin,xmax = 0,6000; nx = 60000
+ymin,ymax = -100,100; ny = 20000
 zmin,zmax = 0,1; ny = 64
 
 grid = RectilinearGrid(
     processor,
-    size = (nx,ny),    x = (xmin,xmax), y = (ymin,ymax),
+    size = (nx,ny),    x = (xmin,xmax), z = (zmin,zmax),
     topology=(Periodic, Flat, Bounded)
-    # size = (nx,ny,nz), x = (xmin,xmax), y = (ymin,ymax), z = (zmin,zmax),
+    # size = (nx,ny,nz), x = (xmin,xmax), z = (zmin,zmax), y = (ymin,ymax),
     # topology=(Periodic, Periodic, Bounded)
 )
 
@@ -50,9 +58,7 @@ wizard = TimeStepWizard(cfl=0.7, max_change=1.1)
 start_time = time_ns()
 progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%07d",sim.model.clock.iteration)) steps | Model Time: $(@sprintf("%09.3f",sim.model.clock.time))"
 
-simulation = Simulation(model, Δt=1e-2, stop_time=100)
-simulation.callbacks[:wizard]   = Callback(wizard,   IterationInterval(10))
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
+simulation = Simulation(model, Δt=1e-2, stop_time=500)
 
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b        # unpack buoyancy `Field`
@@ -63,5 +69,9 @@ simulation.output_writers[:field_writer] = NetCDFOutputWriter(
     overwrite_existing=true,
     schedule=TimeInterval(0.1)
 )
+
+simulation.callbacks[:wizard]   = Callback(wizard,   IterationInterval(10))
+simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
+simulation.callbacks[:new_file_maker] = Callback(make_new_output_file, TimeInterval(10))
 
 run!(simulation)
