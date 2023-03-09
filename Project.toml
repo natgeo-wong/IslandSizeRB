@@ -1,6 +1,20 @@
 name = "IslandSizeRB"
-[compat]
-julia = "1.8.5"
-DrWatson = "2.12.1"
+
 [deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
+GeoRegions = "b001f823-fa75-4bff-bf55-6610c8f3688a"
+ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
+Oceananigans = "9e8cae18-63c1-5223-a75c-80ca9d6e9a09"
+PNGFiles = "f57f5aa1-a3ce-4bc8-8ab9-96f992907883"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+
+[compat]
+DrWatson = "2.12.1"
+julia = "1.8.5"
