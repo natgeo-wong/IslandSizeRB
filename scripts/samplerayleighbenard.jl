@@ -45,7 +45,7 @@ wᵢ(x,y,z) = 1e-3 * (rand()-1); set!(model, w=wᵢ)
 wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 
 start_time = time_ns()
-progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%08.2f",sim.model.clock.time)) time units | Advective CFL: $(@sprintf("%.3f",AdvectiveCFL(sim.Δt)(sim.model))) |  Diffusive CFL: $("%.3f",@sprintf(AdvectiveCFL(sim.Δt)(sim.model)))"
+progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%08.2f",sim.model.clock.time)) time units | Advective CFL: $(@sprintf("%0.3f",AdvectiveCFL(sim.Δt)(sim.model))) | Diffusive CFL: $(@sprintf("%0.3f",AdvectiveCFL(sim.Δt)(sim.model)))"
 
 simulation = Simulation(model, Δt=1e-2, stop_time=100)
 
