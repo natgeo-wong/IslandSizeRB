@@ -9,9 +9,9 @@ using Printf
 processor = CPU()
 # processor = GPU()
 
-xmin,xmax = 0,6000; nx = 60000
-ymin,ymax = -100,100; ny = 20000
-zmin,zmax = 0,1; ny = 64
+xmin,xmax = -1500,1500; nx = 6000
+ymin,ymax = -500,500; ny = 2000
+zmin,zmax = 0,15; ny = 64
 
 grid = RectilinearGrid(
     processor,
@@ -25,11 +25,8 @@ b_bc_top = ValueBoundaryCondition(0)
 b_bc_bot = ValueBoundaryCondition(1)
 b_bcs = FieldBoundaryConditions(top=b_bc_top, bottom=b_bc_bot)
 
-const Ra = 1e7
+const Ra = 1e10
 const Pr = 1
-
-# Ra = 1 / (κ² * Pr)
-#   -> κ = sqrt(1 / (Ra * Pr))
 const κ = sqrt(1 / (Ra * Pr))
 const ν = κ * Pr
 
@@ -48,22 +45,22 @@ wᵢ(x,y,z) = 1e-3 * (rand()-1); set!(model, w=wᵢ)
 wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 
 start_time = time_ns()
-progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%07d",sim.model.clock.iteration)) steps | Model Time: $(@sprintf("%09.3f",sim.model.clock.time))"
+progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%08.2f",sim.model.clock.time)) time units | Advective CFL: $(@sprintf("%.3f",AdvectiveCFL(sim.Δt)(sim.model))) |  Diffusive CFL: $("%.3f",@sprintf(AdvectiveCFL(sim.Δt)(sim.model)))"
 
-simulation = Simulation(model, Δt=1e-2, stop_time=500)
+simulation = Simulation(model, Δt=1e-2, stop_time=100)
 
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b        # unpack buoyancy `Field`
 
-simulation.output_writers[:field_writer] = NetCDFOutputWriter(
+simulation.output_writers[:fields] = NetCDFOutputWriter(
     model, (; u, v, w, b),
-    indices = (1:1000,:,:),
-    filename=datadir("more_fields.nc"),
+    indices = (2501:3500,:,:),
+    filename=datadir("samplerayleighbenard.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(0.1)
 )
 
 simulation.callbacks[:wizard]   = Callback(wizard,   IterationInterval(10))
-simulation.callbacks[:progress] = Callback(progress, IterationInterval(10))
+simulation.callbacks[:progress] = Callback(progress, TimeInterval(1))
 
 run!(simulation)
