@@ -1,5 +1,10 @@
 # IslandSizeRB
 
+Using [Oceananigans.jl](https://github.com/CliMA/Oceananigans.jl) to simulate
+Rayleigh-Bénard Convection, in the hopes that we can use it to model the impact of
+the diurnal cycle of convection over islands, how it interacts with larger-scale
+convection, and how this is dependent on island size.
+
 This code base is using the [Julia Language](https://julialang.org/) and
 [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
 to make a reproducible scientific project named
