@@ -11,13 +11,16 @@ processor = CPU()
 
 @info "$(now()) - IslandSizeRB - Setting up grid"
 
-xmin,xmax = -2,2; nx = 200
-zmin,zmax = 0,1; ny = 100
+xmin,xmax = -1500,1500; nx = 15000
+ymin,ymax = -500,500; ny = 5000
+zmin,zmax = 0,15; ny = 64
 
 grid = RectilinearGrid(
     processor,
     size = (nx,ny),    x = (xmin,xmax), z = (zmin,zmax),
     topology=(Periodic, Flat, Bounded)
+    # size = (nx,ny,nz), x = (xmin,xmax), z = (zmin,zmax), y = (ymin,ymax),
+    # topology=(Periodic, Periodic, Bounded)
 )
 
 @info "$(now()) - IslandSizeRB - Setting up top and bottom buoyancy boundary conditions"
@@ -52,19 +55,20 @@ wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 start_time = time_ns()
 progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%08.2f",sim.model.clock.time)) time units | Advective CFL: $(@sprintf("%0.3f",AdvectiveCFL(sim.Δt)(sim.model))) | Diffusive CFL: $(@sprintf("%0.3f",DiffusiveCFL(sim.Δt)(sim.model)))"
 
-simulation = Simulation(model, Δt=1e-3, stop_time=2)
+simulation = Simulation(model, Δt=1e-2, stop_time=100)
 
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b        # unpack buoyancy `Field`
 
 simulation.output_writers[:fields] = NetCDFOutputWriter(
-    model, (; b),
+    model, (; u, v, w, b),
+    indices = (2501:3500,:,:),
     filename=datadir("samplerayleighbenard.nc"),
     overwrite_existing=true,
-    schedule=TimeInterval(0.01)
+    schedule=TimeInterval(0.1)
 )
 
 simulation.callbacks[:wizard]   = Callback(wizard,   IterationInterval(10))
-simulation.callbacks[:progress] = Callback(progress, TimeInterval(0.01))
+simulation.callbacks[:progress] = Callback(progress, TimeInterval(1))
 
 run!(simulation)
