@@ -52,13 +52,13 @@ wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 start_time = time_ns()
 progress(sim) = @info "$(now()) - Oceananigans.jl - Integration completed through $(@sprintf("%08.2f",sim.model.clock.time)) time units | Advective CFL: $(@sprintf("%0.3f",AdvectiveCFL(sim.Δt)(sim.model))) | Diffusive CFL: $(@sprintf("%0.3f",DiffusiveCFL(sim.Δt)(sim.model)))"
 
-simulation = Simulation(model, Δt=1e-3, stop_time=2)
+simulation = Simulation(model, Δt=1e-3, stop_time=5)
 
 u, v, w = model.velocities # unpack velocity `Field`s
 b = model.tracers.b        # unpack buoyancy `Field`
 
 simulation.output_writers[:fields] = NetCDFOutputWriter(
-    model, (; b),
+    model, (; u, v, w, b),
     filename=datadir("samplerayleighbenard.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(0.01)
