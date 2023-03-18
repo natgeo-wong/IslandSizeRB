@@ -24,7 +24,7 @@ grid = RectilinearGrid(
 
 b_bc_top = ValueBoundaryCondition(0)
 @inline b_bc_bot(x, y, t) = 100 + 10 * sin(t*10*pi);
-b_bcs = FieldBoundaryConditions(top=b_bc_top, bottom=FluxBoundaryCondition(b_bc_bot))
+b_bcs = FieldBoundaryConditions(top=b_bc_top, bottom=ValueBoundaryCondition(b_bc_bot))
 
 const Ra = 1e8
 const Pr = 1
