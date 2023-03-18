@@ -23,13 +23,22 @@ grid = RectilinearGrid(
 @info "$(now()) - IslandSizeRB - Setting up top and bottom buoyancy boundary conditions"
 
 b_bc_top = ValueBoundaryCondition(0)
-b_bc_bot = ValueBoundaryCondition(100)
-b_bcs = FieldBoundaryConditions(top=b_bc_top, bottom=b_bc_bot)
+@inline b_bc_bot(x, y, t) = 100 + 10 * sin(t*10*pi);
+b_bcs = FieldBoundaryConditions(top=b_bc_top, bottom=FluxBoundaryCondition(b_bc_bot))
 
 const Ra = 1e8
 const Pr = 1
 const κ = sqrt(1 / (Ra * Pr))
 const ν = κ * Pr
+
+@info "$(now()) - IslandSizeRB - Loading up initial conditions from spinup"
+
+ds = NCDataset(datadir("samplerayleighbenard.nc"))
+const uᵢ = ds["u"][:,:,:,end]
+const vᵢ = ds["v"][:,:,:,end]
+const wᵢ = ds["w"][:,:,:,end]
+const bᵢ = ds["b"][:,:,:,end]
+close(ds)
 
 model = NonhydrostaticModel(;
     grid,
@@ -43,9 +52,7 @@ model = NonhydrostaticModel(;
 
 @info "$(now()) - IslandSizeRB - Setting up initial buoyancy and vertical velocity conditions"
 
-bᵢ(x,y,z) = 100 * (1-z)
-wᵢ(x,y,z) = 1e-3 * (rand()-0.5)
-set!(model, b=bᵢ, w=wᵢ)
+set!(model, b=bᵢ, u=uᵢ, v=vᵢ, w=wᵢ)
 
 wizard = TimeStepWizard(cfl=0.5, max_change=1.1)
 
@@ -59,7 +66,7 @@ b = model.tracers.b        # unpack buoyancy `Field`
 
 simulation.output_writers[:fields] = NetCDFOutputWriter(
     model, (; b),
-    filename=datadir("samplerayleighbenard.nc"),
+    filename=datadir("samplediurnal.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(0.01)
 )
