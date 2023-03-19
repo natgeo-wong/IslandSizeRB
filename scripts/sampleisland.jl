@@ -74,7 +74,7 @@ b = model.tracers.b        # unpack buoyancy `Field`
 simulation.output_writers[:fields] = NetCDFOutputWriter(
     model, (; u, v, w, b),
     indices = (2001:3000,:,:),
-    filename=datadir("samplelargescale.nc"),
+    filename=datadir("sampleisland.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(0.9)
 )
