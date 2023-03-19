@@ -46,7 +46,7 @@ model = NonhydrostaticModel(;
 
 @info "$(now()) - IslandSizeRB - Setting up initial buoyancy and vertical velocity conditions"
 
-bᵢ(x,y,z) = 100 * (1-z)
+bᵢ(x,y,z) = 100 * (15-z) / 15
 wᵢ(x,y,z) = 1e-3 * (rand()-0.5)
 set!(model, b=bᵢ, w=wᵢ)
 
@@ -62,7 +62,7 @@ b = model.tracers.b        # unpack buoyancy `Field`
 
 simulation.output_writers[:fields] = NetCDFOutputWriter(
     model, (; u, v, w, b),
-    filename=datadir("samplerayleighbenard.nc"),
+    filename=datadir("samplelargescale.nc"),
     overwrite_existing=true,
     schedule=TimeInterval(1)
 )
